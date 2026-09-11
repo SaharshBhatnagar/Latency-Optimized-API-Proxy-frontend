@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { loginUser } from '../services/authService';
 
-export default function LoginForm() {
+interface LoginFormProps {
+    onLoginSuccess: () => void;
+}
+
+export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
 
     const [username, setUsername] = useState(""); 
 
@@ -20,7 +24,9 @@ export default function LoginForm() {
         try {
             const response = await loginUser(username, password);
 
-            console.log(response.token);
+            localStorage.setItem('jwt', response.token);
+
+            onLoginSuccess();
         }
         catch (err: any) {
             setError(err.message);
@@ -40,8 +46,10 @@ export default function LoginForm() {
             className="p-2 border rounded focus:outline-brand-gold bg-brand-sand/20"
             ></input>
 
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}>
-            </input>
+            <input type="password" placeholder="Enter password"
+            value={password} onChange={(e) => setPassword(e.target.value)}
+            className="p-2 border rounded focus:outline-brand-gold bg-brand-sand/20"
+            ></input>
 
             {error && <p className="text-red-500 text-sm">{error}</p>}
 
