@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { loginUser } from '../services/authService';
+import { loginUser, registerUser } from '../services/authService';
 
 interface LoginFormProps {
     onLogin: () => void;
@@ -18,13 +18,15 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
         setIsLoading(true);
 
         try {
+            let data;
+
             if (isRegisterMode) {
-                setError("Registration backend not yet linked. Please sign in.");
-                setIsLoading(false);
-                return;
+                data = await registerUser(username, password)
+            }
+            else {
+                data = await loginUser(username, password);
             }
 
-            const data = await loginUser(username, password);
             localStorage.setItem('jwt', data.token);
             onLogin();
         } catch (err: any) {
