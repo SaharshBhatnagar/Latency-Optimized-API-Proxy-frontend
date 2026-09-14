@@ -1,12 +1,20 @@
 export async function loginUser(username: string, password: string) {
-    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-    await delay(1000);
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({username, password})
+        }
+    );
 
-    if (username === "username" && password === "password") {
-        return { token: "fake-jwt-token-123" };
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Backend error");
+
     }
-    else {
-        throw new Error("Invalid Credentials");
-    }
+
+    const data = await response.json();
+
+    return data;
+
 };
