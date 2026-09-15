@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import LoginForm from './components/LoginForm.tsx';
+import LoginForm from './components/LoginForm';
 import Dashboard from './components/Dashboard';
 
 export default function App() {
