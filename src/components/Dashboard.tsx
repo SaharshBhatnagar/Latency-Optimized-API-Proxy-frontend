@@ -12,9 +12,12 @@ interface DashboardProps {
 
 export default function Dashboard({ onLogout }: DashboardProps) {
     const [metrics, setMetrics] = useState<MetricsData | null>(null);
-    const [latency, setLatency] = useState<number | null>(null);
     const [logs, setLogs] = useState<string[]>(['[SYSTEM] Gateway dashboard initialized. Awaiting manual trigger.']);
     const [isFetching, setIsFetching] = useState(false);
+    
+    
+    const [dbLatency, setDbLatency] = useState<number | null>(null);
+    const [cacheLatency, setCacheLatency] = useState<number | null>(null);
 
     const addLog = (message: string) => {
         const time = new Date().toISOString().split('T')[1].slice(0, -1);
@@ -52,9 +55,21 @@ export default function Dashboard({ onLogout }: DashboardProps) {
             const endTime = performance.now();
             const fetchTime = Math.round(endTime - startTime);
             
+            
+            const isCacheHit = response.headers.get('X-Cache') === 'HIT';
+
             setMetrics(data);
-            setLatency(fetchTime);
-            addLog(`200 OK: Data successfully retrieved in ${fetchTime}ms.`);
+            
+
+            if (isCacheHit) {
+                setCacheLatency(fetchTime);
+                addLog(`200 OK: Cache HIT! Data retrieved from Redis in ${fetchTime}ms.`);
+            } else {
+                setDbLatency(fetchTime);
+                setCacheLatency(null);
+                addLog(`200 OK: Cache MISS. PostgreSQL queried in ${fetchTime}ms.`);
+            }
+
         } catch (err) {
             addLog('ERROR: Connection failed or token rejected.');
             setTimeout(() => onLogout(), 1500);
@@ -63,16 +78,33 @@ export default function Dashboard({ onLogout }: DashboardProps) {
         }
     };
 
-    const handleClearCache = () => {
-        setMetrics(null);
-        setLatency(null);
-        addLog('FLUSHALL command executed. Local metrics cache cleared.');
+    const handleClearCache = async () => {
+        const token = localStorage.getItem('jwt');
+        if (!token) return;
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/cache`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                setMetrics(null);
+                setDbLatency(null);
+                setCacheLatency(null);
+                addLog('200 OK: FLUSHALL command executed on Gateway Redis.');
+            } else {
+                addLog('ERROR: Gateway refused to flush cache.');
+            }
+        } catch (err) {
+            addLog('ERROR: Network failure while flushing cache.');
+        }
     };
 
     return (
         <div className="min-h-screen bg-brand-cream text-brand-charcoal flex flex-col">
             <nav className="bg-brand-white shadow-md py-4 px-8 flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-brand-blue">Cloud Native Gateway</h2>
+                <h2 className="text-2xl font-bold text-brand-blue">High-Performance API Proxy</h2>
                 <button 
                     onClick={onLogout}
                     className="text-brand-red font-semibold px-4 py-2 hover:bg-gray-100 rounded transition"
@@ -111,22 +143,27 @@ export default function Dashboard({ onLogout }: DashboardProps) {
                                 No data loaded. Trigger a manual fetch to view metrics.
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
                                 <div className="bg-brand-white p-6 rounded-lg shadow-sm flex flex-col gap-2 border-t-4 border-brand-blue">
-                                    <h4 className="text-sm font-bold text-gray-500">Total Requests</h4>
+                                    <h4 className="text-sm font-bold text-gray-500">Current Requests</h4>
                                     <p className="text-3xl font-bold text-brand-blue">{metrics.totalRequest}</p>
                                 </div>
                                 <div className="bg-brand-white p-6 rounded-lg shadow-sm flex flex-col gap-2 border-t-4 border-brand-blue">
-                                    <h4 className="text-sm font-bold text-gray-500">Active Users</h4>
+                                    <h4 className="text-sm font-bold text-gray-500">Total Registered Users</h4>
                                     <p className="text-3xl font-bold text-brand-blue">{metrics.activeUsers}</p>
                                 </div>
                                 <div className="bg-brand-white p-6 rounded-lg shadow-sm flex flex-col gap-2 border-t-4 border-brand-blue">
                                     <h4 className="text-sm font-bold text-gray-500">Cache Hits</h4>
                                     <p className="text-3xl font-bold text-brand-blue">{metrics.CacheHits}</p>
                                 </div>
-                                <div className="bg-brand-white p-6 rounded-lg shadow-sm flex flex-col gap-2 border-t-4 border-brand-blue">
-                                    <h4 className="text-sm font-bold text-gray-500">Fetch Latency</h4>
-                                    <p className="text-3xl font-bold text-brand-blue">{latency !== null ? `${latency} ms` : '--'}</p>
+                                <div className="bg-brand-white p-6 rounded-lg shadow-sm flex flex-col gap-2 border-t-4 border-gray-400">
+                                    <h4 className="text-sm font-bold text-gray-500">Initial Latency (ms)</h4>
+                                    <p className="text-3xl font-bold text-gray-700">{dbLatency !== null ? `${dbLatency} ms` : '--'}</p>
+                                </div>
+                                <div className="bg-brand-white p-6 rounded-lg shadow-sm flex flex-col gap-2 border-t-4 border-emerald-500">
+                                    <h4 className="text-sm font-bold text-emerald-600">Redis Cached Latency (ms)</h4>
+                                    <p className="text-3xl font-bold text-emerald-500">{cacheLatency !== null ? `${cacheLatency} ms` : '--'}</p>
                                 </div>
                             </div>
                         )}
