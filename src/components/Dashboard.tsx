@@ -12,7 +12,7 @@ interface DashboardProps {
 
 export default function Dashboard({ onLogout }: DashboardProps) {
     const [metrics, setMetrics] = useState<MetricsData | null>(null);
-    const [logs, setLogs] = useState<string[]>(['[SYSTEM] Gateway dashboard initialized. Awaiting manual trigger.']);
+    const [logs, setLogs] = useState<string[]>(['[SYSTEM] Gateway dashboard initialized. Awaiting trigger.']);
     const [isFetching, setIsFetching] = useState(false);
     
     
@@ -104,7 +104,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     return (
         <div className="min-h-screen bg-brand-cream text-brand-charcoal flex flex-col">
             <nav className="bg-brand-white shadow-md py-4 px-8 flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-brand-blue">High-Performance API Proxy</h2>
+                <h2 className="text-2xl font-bold text-brand-blue">Latency Optimized API Proxy </h2>
                 <button 
                     onClick={onLogout}
                     className="text-brand-red font-semibold px-4 py-2 hover:bg-gray-100 rounded transition"
@@ -125,7 +125,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
                                 disabled={isFetching}
                                 className="px-6 py-2 bg-brand-blue hover:opacity-90 text-brand-white rounded font-medium transition shadow-md disabled:opacity-50"
                             >
-                                {isFetching ? 'Fetching...' : 'GET /api/metrics'}
+                                {isFetching ? 'Fetching...' : 'Check Latency'}
                             </button>
                             <button 
                                 onClick={handleClearCache}
