@@ -1,6 +1,6 @@
 # Cloud-Native Performance Dashboard (Frontend)
 
-A lightning-fast, responsive user interface built with React, TypeScript, and Vite. It serves as the control center for the Latency-Optimized API Proxy, securely authenticating users and visualizing real-time cache telemetry, hit/miss ratios, and system latency.
+A lightning-fast, responsive user interface built with React, TypeScript, Vite, and Tailwind CSS. It serves as the control center for the Latency-Optimized API Proxy, securely authenticating users and visualizing real-time cache telemetry, hit/miss ratios, and system latency.
 
 ![Performance Dashboard UI](./docs/dashboard-ui.png)
 
@@ -19,30 +19,25 @@ Make sure you have Node.js and npm installed. To view live metrics, ensure the G
     ```
 
 2. Navigate to the project directory:
-
-    ```Bash
+    ```bash
     cd Latency-Optimized-API-Proxy-frontend
     ```
 
 3. Install dependencies:
-
-    ```Bash
+    ```bash
     npm install
     ```
 
 4. Create your environment file:
-
     Create a .env file in the root and add your API gateway target:
-
-    ```Bash
-    VITE_API_URL=http://localhost:8000
+    ```bash
+    VITE_API_URL=http://localhost:8000/api
     ```
 
-    > **Note**: Vite requires environment variables exposed to the client to be prefixed with `VITE_`. In your production AWS environment, this should point to your live gateway URL.
+    > **Note**: Vite requires environment variables exposed to the client to be prefixed with `VITE_`. In your production AWS environment, this points to your live gateway URL (`https://api.saharshbhatnagar.app/api`).
 
 5. Start the development server:
-
-    ```Bash
+    ```bash
     npm run dev
     ```
 
@@ -51,14 +46,12 @@ Make sure you have Node.js and npm installed. To view live metrics, ensure the G
 ### Production Build
 
 1. Compile the TypeScript and build the React app:
-
-    ```Bash
+    ```bash
     npm run build
     ```
 
 2. Preview the compiled production build locally:
-
-    ```Bash
+    ```bash
     npm run preview
     ```
 
@@ -68,26 +61,29 @@ Make sure you have Node.js and npm installed. To view live metrics, ensure the G
 
 The application can be run as a container by mapping the standard HTTP port:
 
-```Bash
+```bash
 docker build -t latency-optimized-api-proxy-frontend .
-docker run -p 80:80 latency-optimized-api-proxy-frontend
+docker run -p 3000:80 latency-optimized-api-proxy-frontend
 ```
 
 If you are running the full stack locally, use docker-compose:
 
-```Bash
+```bash
 docker compose up -d frontend
 ```
 
 ## Directory Structure
 
-```Plaintext
+```plaintext
 Latency-Optimized-API-Proxy-frontend/
 ├── .github/workflows/deploy.yml
 ├── src/
 │   ├── components/          
+│   │   ├── AccessDeniedModal.tsx
 │   │   ├── Dashboard.tsx    
-│   │   └── LoginForm.tsx    
+│   │   ├── LoginForm.tsx    
+│   │   ├── Navbar.tsx
+│   │   └── ResetPasswordModal.tsx
 │   ├── services/            
 │   │   └── authService.ts   
 │   ├── App.tsx              
@@ -103,7 +99,7 @@ Latency-Optimized-API-Proxy-frontend/
 
 ## CI/CD Pipeline
 
-> This repository includes a `GitHub Actions workflow` (deploy.yml) that automatically builds the Docker image and pushes it to Amazon Elastic Container Registry (ECR) upon pushes to the main branch. Ensure your AWS IAM credentials (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`) are stored safely in GitHub Repository Secrets.
+> This repository includes a GitHub Actions workflow (`deploy.yml`) that automatically builds the Docker image, pushes it to Amazon Elastic Container Registry (ECR), and automatically deploys to your EC2 instance via SSH upon pushes to the main branch. Ensure your AWS IAM credentials and EC2 SSH secrets are stored safely in GitHub Repository Secrets.
 
 ## Additional Documentation
 
@@ -117,6 +113,6 @@ Latency-Optimized-API-Proxy-frontend/
 
 This frontend UI is one component of a complete cloud-native ecosystem. You can explore the other microservices in this architecture here:
 
-* **API Gateway:** [Latency Optimized API Proxy Gateway](https://github.com/SaharshBhatnagar/Latency-optimized-API-Proxy-gateway)
+* **API Gateway:** [Latency-Optimized API Proxy Gateway](https://github.com/SaharshBhatnagar/Latency-Optimized-API-Proxy-gateway)
 
-* **Backend:** [Latency Optimized API Proxy Gateway Backend](https://github.com/SaharshBhatnagar/Latency-optimized-API-Proxy-backend)
+* **Backend:** [Latency-Optimized API Proxy Backend](https://github.com/SaharshBhatnagar/Latency-Optimized-API-Proxy-backend)

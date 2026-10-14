@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 body {
-  @apply bg-brand-cream text-brand-charcoal;
+  @apply bg-brand-cream text-brand-charcoal dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200 min-h-screen;
 }
